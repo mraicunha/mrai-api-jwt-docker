@@ -39,6 +39,29 @@ module.exports = {
   },
 
   async update (req, res) {
+    const { username, email, password, newEmail } = req.body
+
+    let user = await userModel.findOne({ email })
+    if (!user) {
+      return res.json(400).json({ error: 'Usuário não localizado' })
+    }
+
+    if (username) {
+      user.username = username
+    }
+
+    if (newEmail) {
+      user.email = newEmail
+    }
+
+    if (password) {
+      const hash = await passwordUtils.generateHash(password)
+      user.password = hash
+    }
+
+    await userModel.findByIdAndUpdate(user._id, user)
+    user = await userModel.findById({ _id: user._id })
+    return res.json(user)
   },
 
   async destroy (req, res) {
